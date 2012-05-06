@@ -19,14 +19,9 @@ module Submodule
 
       gitmodules = IniFile.new('./.gitmodules').to_h
       @path = gitmodules[gitmodules.keys.first]["path"]
-      @submodule_name = gitmodules.keys.first
-        .gsub('submodule ', '')
-        .gsub('"', '')
-        .gsub('vendor/', '')
-      @github = gitmodules[gitmodules.keys.first]["url"]
-        .gsub('https://github.com/', '')
-        .gsub('.git', '')
-      define 
+      @submodule_name = gitmodules.keys.first.gsub('submodule ', '').gsub('"', '').gsub('vendor/', '')
+      @github = gitmodules[gitmodules.keys.first]["url"].gsub('https://github.com/', '').gsub('.git', '')
+      define
     end
 
     def test
