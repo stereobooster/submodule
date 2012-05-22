@@ -5,10 +5,10 @@ require "inifile"
 
 module Submodule
   class Task < ::Rake::TaskLib
-
     attr_reader :path
+    attr_accessor :branch
 
-    def initialize
+    def initialize 
       @cwd = Dir.pwd
 
       base = File.basename Dir["*.gemspec"][0], ".gemspec"
@@ -19,17 +19,29 @@ module Submodule
 
       gitmodules = IniFile.new('./.gitmodules').to_h
       @path = gitmodules[gitmodules.keys.first]["path"]
+      @path = File.expand_path(@path, @cwd)
       @submodule_name = gitmodules.keys.first.gsub('submodule ', '').gsub('"', '').gsub('vendor/', '')
       @github = gitmodules[gitmodules.keys.first]["url"].gsub('https://github.com/', '').gsub('.git', '')
+
+      # TODO: detect default branch
+      @branch = "master"
+
+      yield self if block_given?
       define
     end
 
-    def test
-      p "define tests in test function"
-    end
-
-    def after_pull
-      p "after pull"
+    [:test, :after_pull].each do |method|
+      define_method method do |&block|
+        instance_variable_set("@#{method}", block)
+      end
+      define_method "run_#{method}" do
+        callback = instance_variable_get("@#{method}")
+        if callback.respond_to?(:call)
+          callback.call
+        else
+          warn "define #{method}"
+        end
+      end
     end
 
     private
@@ -45,18 +57,18 @@ module Submodule
         if hash_before == hash_after
           abort "submodule #{@submodule_name} already up-to-date"
         end
-        test
+        run_test
         update_version hash_after
         cd @cwd
         git_add
-        after_pull
+        run_after_pull
         git_commit hash_after
       end
       desc "Test submodule #{@submodule_name}"
       task "submodule:test" do
         git_update
         cd path
-        test
+        run_test
         cd @cwd
       end
       self
@@ -77,7 +89,7 @@ module Submodule
 
     def git_pull
       sh "git clean -f"
-      sh "git checkout master"
+      sh "git checkout #{branch}"
       sh "git pull"
       # res = my_sh "git pull"
       # if res =~ /Already up-to-date/
