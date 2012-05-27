@@ -19,3 +19,8 @@ class SomeSubmodule  < Submodule::Task
 end
 SomeSubmodule.new
 ```
+
+## Alternatives
+
+### [vendorer](https://github.com/grosser/vendorer)
+Submodule support only git. Submodule use `.gitmodules` as config, but vendorer use `Vendorfile`
