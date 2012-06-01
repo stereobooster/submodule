@@ -8,19 +8,22 @@ Install gem or add it to `Gemfile` then put in your `Rakefile`:
 
 ```ruby
 require 'submodule'
-class SomeSubmodule  < Submodule::Task
-    def test
+Submodule::Task.new do |t|
+    t.test do
       # run tests of submodule
     end
 
-    def after_pull
+    t.after_pull do
       # do something
     end
 end
-SomeSubmodule.new
 ```
 
 ## Alternatives
 
 ### [vendorer](https://github.com/grosser/vendorer)
 Submodule support only git. Submodule use `.gitmodules` as config, but vendorer use `Vendorfile`
+
+## TODO
+
+ - Implement: upgrade submodule to the latest version with passing tests
